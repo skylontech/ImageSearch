@@ -2,6 +2,8 @@ package com.example.imagesearch.view.gallery
 
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
@@ -22,7 +24,11 @@ class FragmentGallery : DaggerFragment(R.layout.fragment_gallery) {
 
     private lateinit var errorView: TextView
 
+    private lateinit var edtSearchBox : EditText
+
     private val photoAdapter = PhotoAdapter()
+
+    private lateinit var galleryViewModel: GalleryViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,8 +40,21 @@ class FragmentGallery : DaggerFragment(R.layout.fragment_gallery) {
 
         errorView = view.findViewById(R.id.text_view_empty)
 
-        val viewModel = ViewModelProvider(this, viewModelProviderFactory)[GalleryViewModel::class.java]
-        viewModel.photosLiveData.observe(viewLifecycleOwner) { response ->
+        edtSearchBox = view.findViewById(R.id.edt_search)
+
+        edtSearchBox.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                val query = edtSearchBox.text.toString()
+                if(query.isNotEmpty()) {
+                    galleryViewModel.searchPhotos(query)
+                }
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
+
+        galleryViewModel = ViewModelProvider(this, viewModelProviderFactory)[GalleryViewModel::class.java]
+        galleryViewModel.photosLiveData.observe(viewLifecycleOwner) { response ->
             when (response) {
                 is ResourceResult.Loading -> {
                     recyclerView.visibility = View.GONE
