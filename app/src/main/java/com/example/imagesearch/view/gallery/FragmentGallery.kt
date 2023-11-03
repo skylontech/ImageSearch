@@ -10,13 +10,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.example.imagesearch.R
 import com.example.imagesearch.data.repo.ResourceResult
+import com.example.imagesearch.view.gallery.viewModel.GalleryViewModelFactory
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject
 
 class FragmentGallery : DaggerFragment(R.layout.fragment_gallery) {
 
     @Inject
-    lateinit var viewModelProviderFactory: ViewModelProvider.Factory
+    lateinit var galleryViewModelAssistedFactory: GalleryViewModelFactory.AssistedFactory
 
     private lateinit var recyclerView: RecyclerView
 
@@ -53,7 +54,7 @@ class FragmentGallery : DaggerFragment(R.layout.fragment_gallery) {
             return@setOnEditorActionListener false
         }
 
-        galleryViewModel = ViewModelProvider(this, viewModelProviderFactory)[GalleryViewModel::class.java]
+        galleryViewModel = ViewModelProvider(requireActivity(), galleryViewModelAssistedFactory.create(this))[GalleryViewModel::class.java]
         galleryViewModel.photosLiveData.observe(viewLifecycleOwner) { response ->
             when (response) {
                 is ResourceResult.Loading -> {
